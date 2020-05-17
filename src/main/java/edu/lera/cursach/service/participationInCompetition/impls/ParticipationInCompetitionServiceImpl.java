@@ -26,8 +26,8 @@ public class ParticipationInCompetitionServiceImpl implements IParticipationInCo
 
     @PostConstruct
     void init(){
-        List<ParticipationInCompetition> list = dao.getAll();
-//        List<Tourist> list = repository.findAll();
+//        List<ParticipationInCompetition> list = dao.getAll();
+        List<ParticipationInCompetition> list = repository.findAll();
         repository.saveAll(list);
     }
 
@@ -118,7 +118,9 @@ public class ParticipationInCompetitionServiceImpl implements IParticipationInCo
         for (int i = 0; i < participationInCompetitions.size(); i++) {
 
             if (participationInCompetitions.get(i).getTourist().getName()
-                    .toLowerCase().contains(word.toLowerCase())) {
+                    .toLowerCase().contains(word.toLowerCase()) ||
+                    participationInCompetitions.get(i).getCompetition().getCompetition_name()
+                            .toLowerCase().contains(word.toLowerCase())) {
 
                 found.add(participationInCompetitions.get(i));
             }

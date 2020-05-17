@@ -27,8 +27,8 @@ public class TourTypeServiceImpl implements ITouristService {
 
     @PostConstruct
     void init(){
-        List<TourType> list = dao.getAll();
-//        List<Tourist> list = repository.findAll();
+//        List<TourType> list = dao.getAll();
+        List<TourType> list = repository.findAll();
         repository.saveAll(list);
     }
 

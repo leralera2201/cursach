@@ -26,8 +26,8 @@ public class CaptainServiceImpl implements ICaptainService {
 
     @PostConstruct
     void init(){
-        List<Captain> list = dao.getAll();
-//        List<Tourist> list = repository.findAll();
+//        List<Captain> list = dao.getAll();
+        List<Captain> list = repository.findAll();
         repository.saveAll(list);
     }
 

@@ -28,8 +28,8 @@ public class CompetitionServiceImpl implements ICompetitionService {
 
     @PostConstruct
     void init(){
-        List<Competition> list = dao.getAll();
-//        List<Tourist> list = repository.findAll();
+//        List<Competition> list = dao.getAll();
+        List<Competition> list = repository.findAll();
         repository.saveAll(list);
     }
 

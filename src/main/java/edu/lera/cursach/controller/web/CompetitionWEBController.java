@@ -7,6 +7,7 @@ import edu.lera.cursach.model.Section;
 import edu.lera.cursach.model.Tourist;
 import edu.lera.cursach.service.competition.impls.CompetitionServiceImpl;
 import edu.lera.cursach.service.section.impls.SectionServiceImpl;
+import edu.lera.cursach.validation.Validation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -32,13 +33,13 @@ public class CompetitionWEBController {
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-d H-m");
 
 
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping("/list")
     String getAll(Model model) {
         model.addAttribute("competitions", service.getAll());
         return "competitionList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping(value = "/list")
     public String search(Model model,
                          @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -48,7 +49,7 @@ public class CompetitionWEBController {
         model.addAttribute("competitions", list);
         return "competitionList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public String showAll(Model model) {
         List<Competition> list = service.getAll();
@@ -57,7 +58,7 @@ public class CompetitionWEBController {
         model.addAttribute("competitions", list);
         return "competitionList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list", method = RequestMethod.GET)
     String sort(Model model){
         List<Competition> list = service.sortByDate();
@@ -66,7 +67,7 @@ public class CompetitionWEBController {
         model.addAttribute("searchForm", searchForm);
         return "competitionList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list", method = RequestMethod.POST)
     public String searchSorted(Model model,
                                @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -76,15 +77,18 @@ public class CompetitionWEBController {
         model.addAttribute("competitions", list);
         return "competitionList";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping("/delete/{id}")
     String delete(Model model,
                   @PathVariable("id") String id) {
         service.delete(id);
         model.addAttribute("competitions", service.getAll());
-        return "competitionList";
+        SearchForm searchForm = new SearchForm();
+        model.addAttribute("searchForm", searchForm);
+        return "redirect:/web/competition/list";
+
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/create", method = RequestMethod.GET)
     String create(Model model) {
         CompetitionForm competitionForm = new CompetitionForm();
@@ -96,22 +100,31 @@ public class CompetitionWEBController {
         model.addAttribute("competitionForm", competitionForm);
         return "competitionAdd";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     String create(Model model, @ModelAttribute("competitionForm") CompetitionForm competitionForm) {
         Competition competition = new Competition();
-        Section section = sectionService.get(competitionForm.getSection());
-        competition.setCompetition_name(competitionForm.getCompetition_name());
-        competition.setCompetition_date(LocalDateTime.parse(competitionForm.getCompetition_date(), formatter));
-        competition.setDescription(competitionForm.getDescription());
-        competition.setSection(section);
-        service.save(competition);
-        SearchForm searchForm = new SearchForm();
-        model.addAttribute("searchForm", searchForm);
-        model.addAttribute("competitions", service.getAll());
-        return "redirect:/web/competition/list";
+        Validation validation = new Validation();
+        boolean vn = validation.validateName(competitionForm.getCompetition_name());
+        boolean vd = validation.validateStringField(competitionForm.getDescription());
+        boolean vdt = validation.validateDateTime(competitionForm.getCompetition_date());
+        if (vn && vd && vdt) {
+            Section section = sectionService.get(competitionForm.getSection());
+            competition.setCompetition_name(competitionForm.getCompetition_name());
+            competition.setCompetition_date(LocalDateTime.parse(competitionForm.getCompetition_date(), formatter));
+            competition.setDescription(competitionForm.getDescription());
+            competition.setSection(section);
+            service.save(competition);
+            SearchForm searchForm = new SearchForm();
+            model.addAttribute("searchForm", searchForm);
+            model.addAttribute("competitions", service.getAll());
+            return "redirect:/web/competition/list";
+        }else{
+            return "wrongData";
+        }
+
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.GET)
     String edit(Model model, @PathVariable("id") String id) {
         Competition competition = service.get(id);
@@ -126,23 +139,32 @@ public class CompetitionWEBController {
         competitionForm.setDescription(competition.getDescription());
         competitionForm.setSection(competition.getSection().getSection_name());
         model.addAttribute("competitionForm", competitionForm);
-        return "competitionAdd";
+        return "competitionEdit";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.POST)
     String edit(Model model, @PathVariable("id") String id, @ModelAttribute("competitionForm") CompetitionForm competitionForm) {
         Competition competition = new Competition();
-        competition.setId(id);
-        Section section = sectionService.get(competitionForm.getSection());
-        competition.setCompetition_name(competitionForm.getCompetition_name());
-        competition.setCompetition_date(LocalDateTime.parse(competitionForm.getCompetition_date(), formatter));
-        competition.setDescription(competitionForm.getDescription());
-        competition.setSection(section);
-        service.save(competition);
-        SearchForm searchForm = new SearchForm();
-        model.addAttribute("searchForm", searchForm);
-        model.addAttribute("competitions", service.getAll());
-        return "redirect:/web/competition/list";
+        Validation validation = new Validation();
+        boolean vn = validation.validateName(competitionForm.getCompetition_name());
+        boolean vd = validation.validateStringField(competitionForm.getDescription());
+        boolean vdt = validation.validateDateTime(competitionForm.getCompetition_date());
+        if (vn && vd && vdt) {
+            competition.setId(id);
+            Section section = sectionService.get(competitionForm.getSection());
+            competition.setCompetition_name(competitionForm.getCompetition_name());
+            competition.setCompetition_date(LocalDateTime.parse(competitionForm.getCompetition_date(), formatter));
+            competition.setDescription(competitionForm.getDescription());
+            competition.setSection(section);
+            service.save(competition);
+            SearchForm searchForm = new SearchForm();
+            model.addAttribute("searchForm", searchForm);
+            model.addAttribute("competitions", service.getAll());
+            return "redirect:/web/competition/list";
+        }else{
+            return "wrongData";
+        }
+
     }
 
 }

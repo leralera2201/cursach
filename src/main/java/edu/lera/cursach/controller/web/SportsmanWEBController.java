@@ -6,6 +6,7 @@ import edu.lera.cursach.model.Sportsman;
 import edu.lera.cursach.model.Tourist;
 import edu.lera.cursach.service.sportsman.impls.SportsmanServiceImpl;
 import edu.lera.cursach.service.tourist.impls.TouristServiceImpl;
+import edu.lera.cursach.validation.Validation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -24,13 +25,13 @@ public class SportsmanWEBController {
 
     @Autowired
     TouristServiceImpl touristService;
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping("/list")
     String getAll(Model model) {
         model.addAttribute("sportsmen", service.getAll());
         return "sportsmanList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public String showAll(Model model) {
         List<Sportsman> list = service.getAll();
@@ -39,7 +40,7 @@ public class SportsmanWEBController {
         model.addAttribute("sportsmen", list);
         return "sportsmanList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping(value = "/list")
     public String search(Model model,
                          @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -49,7 +50,7 @@ public class SportsmanWEBController {
         model.addAttribute("sportsmen", list);
         return "sportsmanList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list", method = RequestMethod.GET)
     String sort(Model model){
         List<Sportsman> list = service.sortByName();
@@ -58,7 +59,7 @@ public class SportsmanWEBController {
         model.addAttribute("searchForm", searchForm);
         return "sportsmanList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list", method = RequestMethod.POST)
     public String searchSorted(Model model,
                                @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -68,15 +69,17 @@ public class SportsmanWEBController {
         model.addAttribute("sportsmen", list);
         return "sportsmanList";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping("/delete/{id}")
     String delete(Model model,
                   @PathVariable("id") String id) {
         service.delete(id);
         model.addAttribute("sportsmen", service.getAll());
-        return "sportsmanList";
+        SearchForm searchForm = new SearchForm();
+        model.addAttribute("searchForm", searchForm);
+        return "redirect:/web/sportsman/list";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/create", method = RequestMethod.GET)
     String create(Model model) {
         SportsmanForm sportsmanForm = new SportsmanForm();
@@ -87,21 +90,28 @@ public class SportsmanWEBController {
         model.addAttribute("sportsmanForm", sportsmanForm);
         return "sportsmanAdd";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     String create(Model model, @ModelAttribute("sportsmanForm") SportsmanForm sportsmanForm) {
         Sportsman sportsman = new Sportsman();
         Tourist tourist = touristService.get(sportsmanForm.getTourist());
-        sportsman.setSport_kinds(sportsmanForm.getSport_kinds());
-        sportsman.setTourist(tourist);
+        Validation validation = new Validation();
+        boolean vd = validation.validateStringField(sportsmanForm.getSport_kinds());
+        if (vd ) {
+            sportsman.setSport_kinds(sportsmanForm.getSport_kinds());
+            sportsman.setTourist(tourist);
 
-        service.save(sportsman);
-        SearchForm searchForm = new SearchForm();
-        model.addAttribute("searchForm", searchForm);
-        model.addAttribute("sportsmen", service.getAll());
-        return "redirect:/web/sportsman/list";
+            service.save(sportsman);
+            SearchForm searchForm = new SearchForm();
+            model.addAttribute("searchForm", searchForm);
+            model.addAttribute("sportsmen", service.getAll());
+            return "redirect:/web/sportsman/list";
+        }else {
+            return "wrongData";
+        }
+
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.GET)
     String edit(Model model, @PathVariable("id") String id) {
         Sportsman sportsman = service.get(id);
@@ -112,22 +122,29 @@ public class SportsmanWEBController {
         sportsmanForm.setTourist(sportsman.getTourist().getName());
         model.addAttribute("sportsmanForm", sportsmanForm);
         model.addAttribute("mavs", mavs);
-        return "sportsmanAdd";
+        return "sportsmanEdit";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.POST)
     String edit(Model model, @PathVariable("id") String id, @ModelAttribute("sportsmanForm") SportsmanForm sportsmanForm) {
         Sportsman sportsman = new Sportsman();
-        sportsman.setId(id);
-        Tourist tourist = touristService.get(sportsmanForm.getTourist());
-        sportsman.setSport_kinds(sportsmanForm.getSport_kinds());
-        sportsman.setTourist(tourist);
+        Validation validation = new Validation();
+        boolean vd = validation.validateStringField(sportsmanForm.getSport_kinds());
+        if (vd ) {
+            sportsman.setId(id);
+            Tourist tourist = touristService.get(sportsmanForm.getTourist());
+            sportsman.setSport_kinds(sportsmanForm.getSport_kinds());
+            sportsman.setTourist(tourist);
 
-        service.save(sportsman);
-        SearchForm searchForm = new SearchForm();
-        model.addAttribute("searchForm", searchForm);
-        model.addAttribute("sportsmen", service.getAll());
-        return "redirect:/web/sportsman/list";
+            service.save(sportsman);
+            SearchForm searchForm = new SearchForm();
+            model.addAttribute("searchForm", searchForm);
+            model.addAttribute("sportsmen", service.getAll());
+            return "redirect:/web/sportsman/list";
+        }else {
+            return "wrongData";
+        }
+
     }
 
 }

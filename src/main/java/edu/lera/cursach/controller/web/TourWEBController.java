@@ -12,6 +12,7 @@ import edu.lera.cursach.service.tour.impls.TourServiceImpl;
 import edu.lera.cursach.service.section.impls.SectionServiceImpl;
 import edu.lera.cursach.service.tourType.impls.TourTypeServiceImpl;
 import edu.lera.cursach.service.tourist.impls.TouristServiceImpl;
+import edu.lera.cursach.validation.Validation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -41,13 +42,13 @@ public class TourWEBController {
     TourTypeServiceImpl tourTypeService;
 
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-d H-m");
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping("/list")
     String getAll(Model model) {
         model.addAttribute("tours", service.getAll());
         return "tourList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public String showAll(Model model) {
         List<Tour> list = service.getAll();
@@ -56,7 +57,7 @@ public class TourWEBController {
         model.addAttribute("tours", list);
         return "tourList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping(value = "/list")
     public String search(Model model,
                          @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -66,7 +67,7 @@ public class TourWEBController {
         model.addAttribute("tours", list);
         return "tourList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list", method = RequestMethod.GET)
     String sort(Model model){
         List<Tour> list = service.sortByName();
@@ -75,7 +76,7 @@ public class TourWEBController {
         model.addAttribute("searchForm", searchForm);
         return "tourList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list", method = RequestMethod.POST)
     public String searchSorted(Model model,
                                @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -85,7 +86,7 @@ public class TourWEBController {
         model.addAttribute("tours", list);
         return "tourList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list-by-date", method = RequestMethod.GET)
     String sortByDate(Model model){
         List<Tour> list = service.sortByDate();
@@ -94,7 +95,7 @@ public class TourWEBController {
         model.addAttribute("searchForm", searchForm);
         return "tourList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list-by-date", method = RequestMethod.POST)
     public String searchSortedByDate(Model model,
                                @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -104,7 +105,7 @@ public class TourWEBController {
         model.addAttribute("tours", list);
         return "tourList";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping("/delete/{id}")
     String delete(Model model,
                   @PathVariable("id") String id) {
@@ -114,7 +115,7 @@ public class TourWEBController {
         model.addAttribute("searchForm", searchForm);
         return "redirect:/web/tour/list";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/create", method = RequestMethod.GET)
     public String create(Model model){
         TourForm tourForm = new TourForm();
@@ -135,7 +136,7 @@ public class TourWEBController {
         model.addAttribute("tourForm", tourForm);
         return "tourAdd";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public String create(Model model,
                          @ModelAttribute("tourForm") TourForm tourForm){
@@ -146,25 +147,38 @@ public class TourWEBController {
         Tourist tourist = touristService.get(tourForm.getInstructor());
 
         Tour tour = new Tour();
-        tour.setTour_name(tourForm.getTour_name());
-        tour.setTour_description(tourForm.getTour_description());
-        tour.setTour_full_time(Double.parseDouble(tourForm.getTour_full_time()));
-        tour.setTour_date(LocalDateTime.parse(tourForm.getTour_date(), formatter));
-        tour.setRoute_length(tourForm.getRoute_length());
-        tour.setRoute(tourForm.getRoute());
-        tour.setPayment(Double.parseDouble(tourForm.getPayment()));
-        tour.setCategory(category);
-        tour.setGroup(group);
-        tour.setTour_type(tourType);
-        tour.setInstructor(tourist);
-        service.save(tour);
-        SearchForm searchForm = new SearchForm();
-        model.addAttribute("searchForm", searchForm);
-        model.addAttribute("tours", service.getAll());
-        return "redirect:/web/tour/list";
+        Validation validation = new Validation();
+        boolean vn = validation.validateName(tourForm.getTour_name());
+        boolean vd = validation.validateStringField(tourForm.getTour_description());
+        boolean vdt = validation.validateDateTime(tourForm.getTour_date());
+        boolean vp = validation.validateDouble(tourForm.getPayment());
+        boolean vft = validation.validateDouble(tourForm.getTour_full_time());
+        boolean vr = validation.validateStringField(tourForm.getRoute());
+        boolean vrl = validation.validateStringField(tourForm.getRoute_length());
+        if (vn && vd && vdt && vp && vft && vr && vrl) {
+            tour.setTour_name(tourForm.getTour_name());
+            tour.setTour_description(tourForm.getTour_description());
+            tour.setTour_full_time(Double.parseDouble(tourForm.getTour_full_time()));
+            tour.setTour_date(LocalDateTime.parse(tourForm.getTour_date(), formatter));
+            tour.setRoute_length(tourForm.getRoute_length());
+            tour.setRoute(tourForm.getRoute());
+            tour.setPayment(Double.parseDouble(tourForm.getPayment()));
+            tour.setCategory(category);
+            tour.setGroup(group);
+            tour.setTour_type(tourType);
+            tour.setInstructor(tourist);
+            service.save(tour);
+            SearchForm searchForm = new SearchForm();
+            model.addAttribute("searchForm", searchForm);
+            model.addAttribute("tours", service.getAll());
+            return "redirect:/web/tour/list";
+        }else {
+            return "wrongData";
+        }
+
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.GET)
     public String edit(Model model, @PathVariable("id") String id){
 
@@ -199,9 +213,9 @@ public class TourWEBController {
         model.addAttribute("mavs2", mavs2);
         model.addAttribute("mavs3", mavs3);
         model.addAttribute("mavs4", mavs4);
-        return "tourAdd";
+        return "tourEdit";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.POST)
     public String edit(Model model,
                        @ModelAttribute("tourForm") TourForm tourForm,
@@ -212,24 +226,38 @@ public class TourWEBController {
         TourType tourType = tourTypeService.get(tourForm.getTour_type());
         Category category = categoryService.get(tourForm.getCategory());
         Tourist tourist = touristService.get(tourForm.getInstructor());
-        tour.setId(tourForm.getId());
-        tour.setTour_name(tourForm.getTour_name());
-        tour.setTour_description(tourForm.getTour_description());
-        tour.setTour_full_time(Double.parseDouble(tourForm.getTour_full_time()));
-        tour.setTour_date(LocalDateTime.parse(tourForm.getTour_date(), formatter));
-        tour.setRoute_length(tourForm.getRoute_length());
-        tour.setRoute(tourForm.getRoute());
-        tour.setPayment(Double.parseDouble(tourForm.getPayment()));
-        tour.setCategory(category);
-        tour.setGroup(group);
-        tour.setTour_type(tourType);
-        tour.setInstructor(tourist);
+        Validation validation = new Validation();
+        boolean vn = validation.validateName(tourForm.getTour_name());
+        boolean vd = validation.validateStringField(tourForm.getTour_description());
+        boolean vdt = validation.validateDateTime(tourForm.getTour_date());
+        boolean vp = validation.validateDouble(tourForm.getPayment());
+        boolean vft = validation.validateDouble(tourForm.getTour_full_time());
+        boolean vr = validation.validateStringField(tourForm.getRoute());
+        boolean vrl = validation.validateStringField(tourForm.getRoute_length());
+        if (vn && vd && vdt && vp && vft && vr && vrl) {
+            tour.setId(tourForm.getId());
+            tour.setTour_name(tourForm.getTour_name());
+            tour.setTour_description(tourForm.getTour_description());
+            tour.setTour_full_time(Double.parseDouble(tourForm.getTour_full_time()));
+            tour.setTour_date(LocalDateTime.parse(tourForm.getTour_date(), formatter));
+            tour.setRoute_length(tourForm.getRoute_length());
+            tour.setRoute(tourForm.getRoute());
+            tour.setPayment(Double.parseDouble(tourForm.getPayment()));
+            tour.setCategory(category);
+            tour.setGroup(group);
+            tour.setTour_type(tourType);
+            tour.setInstructor(tourist);
 
-        service.save(tour);
-        SearchForm searchForm = new SearchForm();
-        model.addAttribute("searchForm", searchForm);
-        model.addAttribute("tourForm", tourForm);
-        return "redirect:/web/tour/list";
+            service.save(tour);
+            SearchForm searchForm = new SearchForm();
+            model.addAttribute("searchForm", searchForm);
+            model.addAttribute("tourForm", tourForm);
+            return "redirect:/web/tour/list";
+        }else {
+            return "wrongData";
+        }
+
+
     }
 
 

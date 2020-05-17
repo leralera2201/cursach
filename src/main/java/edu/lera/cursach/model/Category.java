@@ -34,6 +34,10 @@ public class Category {
         return categoryName;
     }
 
+    public String getCategoryName() {
+        return categoryName;
+    }
+
     public void setCategory_name(String categoryName) {
         this.categoryName = categoryName;
     }

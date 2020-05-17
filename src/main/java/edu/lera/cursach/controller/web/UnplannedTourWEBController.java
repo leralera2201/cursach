@@ -24,13 +24,13 @@ public class UnplannedTourWEBController {
     @Autowired
     TourServiceImpl tourService;
 
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping("/list")
     String getAll(Model model) {
         model.addAttribute("unplannedTours", service.getAll());
         return "unplannedTourList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public String showAll(Model model) {
         List<UnplannedTour> list = service.getAll();
@@ -39,7 +39,7 @@ public class UnplannedTourWEBController {
         model.addAttribute("unplannedTours", list);
         return "unplannedTourList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping(value = "/list")
     public String search(Model model,
                          @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -49,7 +49,7 @@ public class UnplannedTourWEBController {
         model.addAttribute("unplannedTours", list);
         return "unplannedTourList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list", method = RequestMethod.GET)
     String sort(Model model){
         List<UnplannedTour> list = service.sortByDate();
@@ -58,7 +58,7 @@ public class UnplannedTourWEBController {
         model.addAttribute("searchForm", searchForm);
         return "unplannedTourList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list", method = RequestMethod.POST)
     public String searchSorted(Model model,
                                @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -68,7 +68,7 @@ public class UnplannedTourWEBController {
         model.addAttribute("unplannedTours", list);
         return "unplannedTourList";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping("/delete/{id}")
     String delete(Model model,
                   @PathVariable("id") String id) {
@@ -76,9 +76,9 @@ public class UnplannedTourWEBController {
         model.addAttribute("unplannedTours", service.getAll());
         SearchForm searchForm = new SearchForm();
         model.addAttribute("searchForm", searchForm);
-        return "redirect:/web/unplannedTour/list";
+        return "redirect:/web/unplanned-tour/list";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/create", method = RequestMethod.GET)
     public String create(Model model){
         UnplannedTourForm unplannedTourForm = new UnplannedTourForm();
@@ -91,7 +91,7 @@ public class UnplannedTourWEBController {
         model.addAttribute("unplannedTourForm", unplannedTourForm);
         return "unplannedTourAdd";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public String create(Model model,
                          @ModelAttribute("unplannedTourForm") UnplannedTourForm unplannedTourForm){
@@ -105,10 +105,10 @@ public class UnplannedTourWEBController {
         SearchForm searchForm = new SearchForm();
         model.addAttribute("searchForm", searchForm);
         model.addAttribute("unplannedTours", service.getAll());
-        return "redirect:/web/unplannedTour/list";
+        return "redirect:/web/unplanned-tour/list";
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.GET)
     public String edit(Model model, @PathVariable("id") String id){
 
@@ -125,9 +125,9 @@ public class UnplannedTourWEBController {
         model.addAttribute("unplannedTourForm", unplannedTourForm);
         model.addAttribute("mavs", mavs);
 
-        return "unplannedTourAdd";
+        return "unplannedTourEdit";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.POST)
     public String edit(Model model,
                        @ModelAttribute("unplannedTourForm") UnplannedTourForm unplannedTourForm,
@@ -143,7 +143,7 @@ public class UnplannedTourWEBController {
         SearchForm searchForm = new SearchForm();
         model.addAttribute("searchForm", searchForm);
         model.addAttribute("unplannedTourForm", unplannedTourForm);
-        return "redirect:/web/unplannedTour/list";
+        return "redirect:/web/unplanned-tour/list";
     }
 
 

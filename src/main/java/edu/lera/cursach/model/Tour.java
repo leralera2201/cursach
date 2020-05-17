@@ -49,6 +49,9 @@ public class Tour {
     public String getTour_name() {
         return tourName;
     }
+    public String getTourName() {
+        return tourName;
+    }
 
     public void setTour_name(String tourName) {
         this.tourName = tourName;

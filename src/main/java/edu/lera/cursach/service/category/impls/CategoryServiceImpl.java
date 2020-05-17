@@ -27,8 +27,8 @@ public class CategoryServiceImpl implements ICategoryService {
 
     @PostConstruct
     void init(){
-        List<Category> list = dao.getAll();
-//        List<Category> list = repository.findAll();
+//        List<Category> list = dao.getAll();
+        List<Category> list = repository.findAll();
         repository.saveAll(list);
     }
 

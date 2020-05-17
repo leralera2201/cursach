@@ -28,8 +28,8 @@ public class SectionServiceImpl implements ISectionService {
 
     @PostConstruct
     void init(){
-        List<Section> list = dao.getAll();
-//        List<Tourist> list = repository.findAll();
+//        List<Section> list = dao.getAll();
+        List<Section> list = repository.findAll();
         repository.saveAll(list);
     }
 

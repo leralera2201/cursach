@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Tour Add</title>
+    <title>Tourist Club</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <link rel="stylesheet" href="../static/css/style.css">
 
@@ -19,8 +19,8 @@
 
         <div class="navbar-collapse collapse w-100 order-3 dual-collapse2" id="navbarSupportedContent">
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item active mr-3">
-                    <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+                <li class="nav-item  mr-3">
+                    <a class="nav-link" href="/">Home <span class="sr-only"></span></a>
                 </li>
 
                 <li class="nav-item dropdown">
@@ -31,19 +31,20 @@
                         <a target="_self" class="dropdown-item"  href="/web/amator/list">Amators</a>
                         <a target="_self" class="dropdown-item"  href="/web/captain/list">Captain</a>
                         <a target="_self" class="dropdown-item" href="/web/category/list">Category</a>
-                        <a target="_self" class="dropdown-item" href="/web/coach/list">coach</a>
-                        <a target="_self" class="dropdown-item" href="/web/competition/list">competition</a>
-                        <a target="_self" class="dropdown-item" href="/web/group/list">group</a>
-                        <a target="_self" class="dropdown-item" href="/web/participation-in-competition/list">participation in competition</a>
-                        <a target="_self" class="dropdown-item" href="/web/planned-tour/list">planned tour</a>
-                        <a target="_self" class="dropdown-item"  href="/web/schedule/list">schedule</a>
-                        <a target="_self" class="dropdown-item"  href="/web/section/list">section</a>
-                        <a target="_self" class="dropdown-item" href="/web/sportsman/list">sportsman</a>
-                        <a target="_self" class="dropdown-item" href="/web/tour/list">tour</a>
-                        <a target="_self" class="dropdown-item" href="/web/tourist/list">tourist</a>
-                        <a target="_self" class="dropdown-item" href="/web/tourist-in-group/list">tourist in group</a>
-                        <a target="_self" class="dropdown-item" href="/web/tour-type/list">tour type</a>
-                        <a target="_self" class="dropdown-item" href="/web/unplanned-tour/list">unplanned tour</a>
+                        <a target="_self" class="dropdown-item" href="/web/coach/list">Coach</a>
+                        <a target="_self" class="dropdown-item" href="/web/competition/list">Competition</a>
+                        <a target="_self" class="dropdown-item" href="/web/group/list">Group</a>
+                        <a target="_self" class="dropdown-item" href="/web/participation-in-competition/list">Part in competition</a>
+                        <a target="_self" class="dropdown-item" href="/web/participation-in-tour/list">Part in tour</a>
+                        <a target="_self" class="dropdown-item" href="/web/planned-tour/list">Planned tour</a>
+                        <a target="_self" class="dropdown-item"  href="/web/schedule/list">Schedule</a>
+                        <a target="_self" class="dropdown-item"  href="/web/section/list">Section</a>
+                        <a target="_self" class="dropdown-item" href="/web/sportsman/list">Sportsman</a>
+                        <a target="_self" class="dropdown-item" href="/web/tour/list">Tour</a>
+                        <a target="_self" class="dropdown-item" href="/web/tourist/list">Tourist</a>
+                        <a target="_self" class="dropdown-item" href="/web/tourist-in-group/list">Tourist in group</a>
+                        <a target="_self" class="dropdown-item" href="/web/tour-type/list">Tour type</a>
+                        <a target="_self" class="dropdown-item" href="/web/unplanned-tour/list">Unplanned tour</a>
                     </div>
                 </li>
 
@@ -55,7 +56,7 @@
 </nav>
 <div class="container">
     <h3 class="pt-4 pb-2">Add new </h3>
-    <form name="tourist" class="form" action="" method="POST" >
+    <form name="tourist" class="form" action="" method="POST" style="width: 600px">
         <div class="form-group">
             <label>Tour name</label>
             <@spring.formInput "tourForm.tour_name" "class='form-control'" "text"/>
@@ -74,10 +75,14 @@
         </div>
         <div class="form-group">
             <label>Tour full time</label>
+            <br>
+            <small>In days. The format is 'X' or 'X.Y'.</small>
             <@spring.formInput "tourForm.tour_full_time" "class='form-control'" "text"/>
         </div>
         <div class="form-group">
             <label>Payment</label>
+            <br>
+            <small>In hryvnias. The format is 'X' or 'X.Y'.</small>
             <@spring.formInput "tourForm.payment" "class='form-control'" "text"/>
         </div>
         <div class="form-group">
@@ -90,6 +95,8 @@
         </div>
         <div class="form-group">
             <label>Tour date</label>
+            <br>
+            <small>The format is 'YYYY-MM-DD HH-mm'.</small>
             <@spring.formInput "tourForm.tour_date" "class='form-control'" "text"/>
         </div>
         <div class="form-group">

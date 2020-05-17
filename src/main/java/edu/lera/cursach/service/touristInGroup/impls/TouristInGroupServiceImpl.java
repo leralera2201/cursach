@@ -28,8 +28,8 @@ public class TouristInGroupServiceImpl implements ITouristInGroupService {
 
     @PostConstruct
     void init(){
-        List<TouristInGroup> list = dao.getAll();
-//        List<Tourist> list = repository.findAll();
+//        List<TouristInGroup> list = dao.getAll();
+        List<TouristInGroup> list = repository.findAll();
         repository.saveAll(list);
     }
 
@@ -119,7 +119,10 @@ public class TouristInGroupServiceImpl implements ITouristInGroupService {
         for (int i = 0; i < touristInGroups.size(); i++) {
 
             if (touristInGroups.get(i).getTourist().getName()
-                    .toLowerCase().contains(word.toLowerCase())) {
+                    .toLowerCase().contains(word.toLowerCase()) ||
+                    touristInGroups.get(i).getGroup().getGroup_name()
+                    .toLowerCase().contains(word.toLowerCase())
+            ) {
 
                 found.add(touristInGroups.get(i));
             }

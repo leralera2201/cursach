@@ -25,8 +25,8 @@ public class AmatorServiceImpl implements IAmatorService {
 
     @PostConstruct
     void init(){
-        List<Amator> list = dao.getAll();
-//        List<Tourist> list = repository.findAll();
+//        List<Amator> list = dao.getAll();
+        List<Amator> list = repository.findAll();
         repository.saveAll(list);
     }
 

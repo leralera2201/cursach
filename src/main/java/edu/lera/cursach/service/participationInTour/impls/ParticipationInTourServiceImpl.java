@@ -24,8 +24,8 @@ public class ParticipationInTourServiceImpl implements IParticipationInTourServi
 
     @PostConstruct
     void init(){
-        List<ParticipationInTour> list = dao.getAll();
-//        List<Tourist> list = repository.findAll();
+//        List<ParticipationInTour> list = dao.getAll();
+        List<ParticipationInTour> list = repository.findAll();
         repository.saveAll(list);
     }
 
@@ -116,7 +116,10 @@ public class ParticipationInTourServiceImpl implements IParticipationInTourServi
         for (int i = 0; i < participationInTours.size(); i++) {
 
             if (participationInTours.get(i).getTourist().getName()
-                    .toLowerCase().contains(word.toLowerCase())) {
+                    .toLowerCase().contains(word.toLowerCase()) ||
+                    participationInTours.get(i).getTour().getTour_name()
+                    .toLowerCase().contains(word.toLowerCase())
+            ) {
 
                 found.add(participationInTours.get(i));
             }

@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("/web/tourist-participation-in-competition")
+@RequestMapping("/web/participation-in-competition")
 public class ParticipationInCompetitionWEBController {
     @Autowired
     ParticipationInCompetitionServiceImpl service;
@@ -36,13 +36,13 @@ public class ParticipationInCompetitionWEBController {
     @Autowired
     CompetitionServiceImpl competitionService;
 
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping("/list")
     String getAll(Model model) {
         model.addAttribute("participationInCompetitions", service.getAll());
         return "participationInCompetitionList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public String showAll(Model model) {
         List<ParticipationInCompetition> list = service.getAll();
@@ -51,7 +51,7 @@ public class ParticipationInCompetitionWEBController {
         model.addAttribute("participationInCompetitions", list);
         return "participationInCompetitionList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping(value = "/list")
     public String search(Model model,
                          @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -61,7 +61,7 @@ public class ParticipationInCompetitionWEBController {
         model.addAttribute("participationInCompetitions", list);
         return "participationInCompetitionList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list-by-tourist", method = RequestMethod.GET)
     String sortByTourist(Model model){
         List<ParticipationInCompetition> list = service.sortByTouristName();
@@ -70,7 +70,7 @@ public class ParticipationInCompetitionWEBController {
         model.addAttribute("searchForm", searchForm);
         return "participationInCompetitionList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list-by-tourist", method = RequestMethod.POST)
     public String searchSortedByTourist(Model model,
                                @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -80,7 +80,7 @@ public class ParticipationInCompetitionWEBController {
         model.addAttribute("participationInCompetitions", list);
         return "participationInCompetitionList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list-by-competition", method = RequestMethod.GET)
     String sortByCompetition(Model model){
         List<ParticipationInCompetition> list = service.sortByCompetitionName();
@@ -89,7 +89,7 @@ public class ParticipationInCompetitionWEBController {
         model.addAttribute("searchForm", searchForm);
         return "participationInCompetitionList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list-by-competition", method = RequestMethod.POST)
     public String searchSortedByCompetition(Model model,
                                @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -99,7 +99,7 @@ public class ParticipationInCompetitionWEBController {
         model.addAttribute("participationInCompetitions", list);
         return "participationInCompetitionList";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping("/delete/{id}")
     String delete(Model model,
                   @PathVariable("id") String id) {
@@ -107,9 +107,9 @@ public class ParticipationInCompetitionWEBController {
         model.addAttribute("participationInCompetitions", service.getAll());
         SearchForm searchForm = new SearchForm();
         model.addAttribute("searchForm", searchForm);
-        return "redirect:/web/participationInCompetition/list";
+        return "redirect:/web/participation-in-competition/list";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/create", method = RequestMethod.GET)
     public String create(Model model){
         ParticipationInCompetitionForm participationInCompetitionForm = new ParticipationInCompetitionForm();
@@ -125,7 +125,7 @@ public class ParticipationInCompetitionWEBController {
         model.addAttribute("participationInCompetitionForm", participationInCompetitionForm);
         return "participationInCompetitionAdd";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public String create(Model model,
                          @ModelAttribute("participationInCompetitionForm") ParticipationInCompetitionForm participationInCompetitionForm){
@@ -142,10 +142,10 @@ public class ParticipationInCompetitionWEBController {
         SearchForm searchForm = new SearchForm();
         model.addAttribute("searchForm", searchForm);
         model.addAttribute("participationInCompetitions", service.getAll());
-        return "redirect:/web/participationInCompetition/list";
+        return "redirect:/web/participation-in-competition/list";
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.GET)
     public String edit(Model model, @PathVariable("id") String id){
 
@@ -162,9 +162,9 @@ public class ParticipationInCompetitionWEBController {
         model.addAttribute("participationInCompetitionForm", participationInCompetitionForm);
         model.addAttribute("mavs", mavs);
         model.addAttribute("mavs2", mavs2);
-        return "participationInCompetitionAdd";
+        return "participationInCompetitionEdit";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.POST)
     public String edit(Model model,
                        @ModelAttribute("touristInParticipationInCompetitionForm") ParticipationInCompetitionForm participationInCompetitionForm,
@@ -182,7 +182,7 @@ public class ParticipationInCompetitionWEBController {
         SearchForm searchForm = new SearchForm();
         model.addAttribute("searchForm", searchForm);
         model.addAttribute("participationInCompetitionForm", participationInCompetitionForm);
-        return "redirect:/web/participationInCompetition/list";
+        return "redirect:/web/participation-in-competition/list";
     }
 
 

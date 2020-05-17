@@ -28,8 +28,8 @@ public class PlannedTourServiceImpl implements IPlannedTourService {
 
     @PostConstruct
     void init(){
-        List<PlannedTour> list = dao.getAll();
-//        List<Tourist> list = repository.findAll();
+//        List<PlannedTour> list = dao.getAll();
+        List<PlannedTour> list = repository.findAll();
         repository.saveAll(list);
     }
 

@@ -7,6 +7,7 @@ import edu.lera.cursach.model.Category;
 import edu.lera.cursach.model.Tourist;
 import edu.lera.cursach.service.category.impls.CategoryServiceImpl;
 import edu.lera.cursach.service.tourist.impls.TouristServiceImpl;
+import edu.lera.cursach.validation.Validation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -30,13 +31,10 @@ public class TouristWEBController {
 
     @Autowired
     CategoryServiceImpl categoryService;
-//    String nameRegex= "\\p{Upper}(\\p{Lower}+\\s?)";
-//    String emailRegex = "^[\\w!#$%&'*+/=?`{|}~^-]+(?:\\.[\\w!#$%&'*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$";
-//    Pattern emailPattern = Pattern.compile(emailRegex);
-//    Pattern namePattern = Pattern.compile(nameRegex);
+
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-d");
 
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @RequestMapping("/list")
     String getAll(Model model) {
         model.addAttribute("tourists", service.getAll());
@@ -44,7 +42,7 @@ public class TouristWEBController {
         model.addAttribute("searchForm", searchForm);
         return "touristList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public String showAll(Model model) {
         List<Tourist> list = service.getAll();
@@ -54,7 +52,7 @@ public class TouristWEBController {
         return "touristList";
     }
 
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PostMapping(value = "/list")
     public String search(Model model,
                          @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -64,7 +62,7 @@ public class TouristWEBController {
         model.addAttribute("tourists", list);
         return "touristList";
     }
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @RequestMapping(value = "/sorted-list", method = RequestMethod.GET)
     String sort(Model model){
         List<Tourist> list = service.sortByName();
@@ -74,7 +72,7 @@ public class TouristWEBController {
         return "touristList";
     }
 
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @RequestMapping(value = "/sorted-list", method = RequestMethod.POST)
     public String searchSorted(Model model,
                                @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -85,7 +83,7 @@ public class TouristWEBController {
         return "touristList";
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping("/delete/{id}")
     String delete(Model model,
                   @PathVariable("id") String id) {
@@ -96,7 +94,7 @@ public class TouristWEBController {
         return "redirect:/web/tourist/list";
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/create", method = RequestMethod.GET)
     public String create(Model model){
         TouristForm touristForm = new TouristForm();
@@ -109,44 +107,48 @@ public class TouristWEBController {
         return "touristAdd";
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public String create(Model model,
                              @ModelAttribute("touristForm") TouristForm touristForm){
 
         Category category = categoryService.get(touristForm.getMax_category());
+        Validation validation = new Validation();
+        boolean vd = validation.validateDate(touristForm.getBirthday());
+        boolean ve = validation.validateEmail(touristForm.getEmail());
+        boolean vn = validation.validateName(touristForm.getName());
+        boolean vs = validation.validateName(touristForm.getSurname());
+        boolean vp = validation.validateName(touristForm.getPatronic());
+        boolean vph = validation.validatePhone(touristForm.getPhone());
+        boolean vnf = validation.validateStringField(touristForm.getNegative_features());
+        boolean vpd = validation.validateStringField(touristForm.getPhysical_data());
 
-        LocalDate birth = LocalDate.parse(touristForm.getBirthday(), formatter);
-        Tourist newTourist = new Tourist(touristForm.getId(), touristForm.getSurname(), touristForm.getName(),
-                                        touristForm.getPatronic(), touristForm.getNegative_features(), touristForm.getPhone(),
-                                        birth, touristForm.getEmail(), category, Boolean.parseBoolean(touristForm.getSex()),
-                                        LocalDateTime.now(), LocalDateTime.now(),touristForm.getPhysical_data());
-//        Matcher emailMatcher = emailPattern.matcher(touristForm.getEmail());
-//        Matcher nameMatcher = namePattern.matcher(touristForm.getName());
-//        if (emailMatcher.matches() && nameMatcher.matches()) {
-//            service.save(newTourist);
-//        } else {
-//           if (!nameMatcher.matches()) {
-//               System.out.println("INVALID NAME");
-//           }
-//           if (!emailMatcher.matches()) {
-//                System.out.println("INVALID EMAIL");
-//            }
-//        }
-        service.save(newTourist);
-        SearchForm searchForm = new SearchForm();
-        model.addAttribute("searchForm", searchForm);
-        model.addAttribute("tourists", service.getAll());
-        return "redirect:/web/tourist/list";
+
+        if (vd && ve && vn && vs && vp && vph && vnf && vpd) {
+            LocalDate birth = LocalDate.parse(touristForm.getBirthday(), formatter);
+            Tourist newTourist = new Tourist(touristForm.getId(), touristForm.getSurname(), touristForm.getName(),
+                    touristForm.getPatronic(), touristForm.getNegative_features(), touristForm.getPhone(),
+                    birth, touristForm.getEmail(), category, Boolean.parseBoolean(touristForm.getSex()),
+                    LocalDateTime.now(), LocalDateTime.now(),touristForm.getPhysical_data());
+
+            service.save(newTourist);
+            SearchForm searchForm = new SearchForm();
+            model.addAttribute("searchForm", searchForm);
+            model.addAttribute("tourists", service.getAll());
+            return "redirect:/web/tourist/list";
+        }else {
+            return "wrongData";
+        }
+
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.GET)
     public String edit(Model model, @PathVariable("id") String id){
 
         Tourist tourist = service.get(id);
         Map<String, String> mavs = categoryService.getAll().stream()
-                .collect(Collectors.toMap(Category::getId, Category::getCategory_name));
+                .collect(Collectors.toMap(Category::getId, Category::getCategoryName));
 
 
         TouristForm touristForm = new TouristForm();
@@ -160,37 +162,52 @@ public class TouristWEBController {
         touristForm.setPhysical_data(tourist.getPhysical_data());
         touristForm.setBirthday(tourist.getBirthday().toString());
         touristForm.setSex(tourist.getSex().toString());
-        touristForm.setMax_category(tourist.getMax_category().getCategory_name());
+        touristForm.setMax_category(tourist.getMax_category().getCategoryName());
         model.addAttribute("touristForm", touristForm);
         model.addAttribute("mavs", mavs);
-        return "touristAdd";
+        return "touristEdit";
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.POST)
     public String edit(Model model,
                               @ModelAttribute("touristForm") TouristForm touristForm,
                               @PathVariable("id") String id){
 
         Tourist tourist = new Tourist();
-        Category category = categoryService.get(touristForm.getMax_category());
 
-        tourist.setId(touristForm.getId());
-        tourist.setName(touristForm.getName());
-        tourist.setSurname(touristForm.getSurname());
-        tourist.setPatronic(touristForm.getPatronic());
-        tourist.setNegative_features(touristForm.getNegative_features());
-        tourist.setPhysical_data(touristForm.getPhysical_data());
-        tourist.setPhone(touristForm.getPhone());
-        tourist.setEmail(touristForm.getEmail());
-        tourist.setBirthday(LocalDate.parse(touristForm.getBirthday(), formatter));
-        tourist.setSex(Boolean.parseBoolean(touristForm.getSex()));
-        tourist.setMax_category(category);
-        service.save(tourist);
-        SearchForm searchForm = new SearchForm();
-        model.addAttribute("searchForm", searchForm);
-        model.addAttribute("touristForm", touristForm);
-        return "redirect:/web/tourist/list";
+
+        Validation validation = new Validation();
+        boolean vd = validation.validateDate(touristForm.getBirthday());
+        boolean ve = validation.validateEmail(touristForm.getEmail());
+        boolean vn = validation.validateName(touristForm.getName());
+        boolean vs = validation.validateName(touristForm.getSurname());
+        boolean vp = validation.validateName(touristForm.getPatronic());
+        boolean vph = validation.validatePhone(touristForm.getPhone());
+        boolean vnf = validation.validateStringField(touristForm.getNegative_features());
+        boolean vpd = validation.validateStringField(touristForm.getPhysical_data());
+        if (vd && ve && vn && vs && vp && vph && vnf && vpd) {
+            Category category = categoryService.get(touristForm.getMax_category());
+
+            tourist.setId(touristForm.getId());
+            tourist.setName(touristForm.getName());
+            tourist.setSurname(touristForm.getSurname());
+            tourist.setPatronic(touristForm.getPatronic());
+            tourist.setNegative_features(touristForm.getNegative_features());
+            tourist.setPhysical_data(touristForm.getPhysical_data());
+            tourist.setPhone(touristForm.getPhone());
+            tourist.setEmail(touristForm.getEmail());
+            tourist.setBirthday(LocalDate.parse(touristForm.getBirthday(), formatter));
+            tourist.setSex(Boolean.parseBoolean(touristForm.getSex()));
+            tourist.setMax_category(category);
+            service.save(tourist);
+            SearchForm searchForm = new SearchForm();
+            model.addAttribute("searchForm", searchForm);
+            model.addAttribute("touristForm", touristForm);
+            return "redirect:/web/tourist/list";
+        }else {
+            return "wrongData";
+        }
     }
 
 

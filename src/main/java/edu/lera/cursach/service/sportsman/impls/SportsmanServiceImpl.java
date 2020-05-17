@@ -28,8 +28,8 @@ public class SportsmanServiceImpl implements ISportsmanService {
 
     @PostConstruct
     void init(){
-        List<Sportsman> list = dao.getAll();
-//        List<Tourist> list = repository.findAll();
+//        List<Sportsman> list = dao.getAll();
+        List<Sportsman> list = repository.findAll();
         repository.saveAll(list);
     }
 

@@ -28,8 +28,8 @@ public class UnplannedTourServiceImpl implements IUnplannedTourService {
 
     @PostConstruct
     void init(){
-        List<UnplannedTour> list = dao.getAll();
-//        List<Tourist> list = repository.findAll();
+//        List<UnplannedTour> list = dao.getAll();
+        List<UnplannedTour> list = repository.findAll();
         repository.saveAll(list);
     }
 

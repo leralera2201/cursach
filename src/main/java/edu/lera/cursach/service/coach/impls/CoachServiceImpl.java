@@ -28,8 +28,8 @@ public class CoachServiceImpl implements ICoachService {
 
     @PostConstruct
     void init(){
-        List<Coach> list = dao.getAll();
-//        List<Tourist> list = repository.findAll();
+//        List<Coach> list = dao.getAll();
+        List<Coach> list = repository.findAll();
         repository.saveAll(list);
     }
 

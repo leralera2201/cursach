@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("/web/tourist-participation-in-tour")
+@RequestMapping("/web/participation-in-tour")
 public class ParticipationInTourWEBController {
     @Autowired
     ParticipationInTourServiceImpl service;
@@ -28,13 +28,13 @@ public class ParticipationInTourWEBController {
     @Autowired
     TourServiceImpl tourService;
 
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping("/list")
     String getAll(Model model) {
         model.addAttribute("participationInTours", service.getAll());
         return "participationInTourList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public String showAll(Model model) {
         List<ParticipationInTour> list = service.getAll();
@@ -43,7 +43,7 @@ public class ParticipationInTourWEBController {
         model.addAttribute("participationInTours", list);
         return "participationInTourList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping(value = "/list")
     public String search(Model model,
                          @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -53,7 +53,7 @@ public class ParticipationInTourWEBController {
         model.addAttribute("participationInTours", list);
         return "participationInTourList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list-by-tourist", method = RequestMethod.GET)
     String sortByTourist(Model model){
         List<ParticipationInTour> list = service.sortByTouristName();
@@ -62,7 +62,7 @@ public class ParticipationInTourWEBController {
         model.addAttribute("searchForm", searchForm);
         return "participationInTourList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list-by-tourist", method = RequestMethod.POST)
     public String searchSortedByTourist(Model model,
                                         @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -72,7 +72,7 @@ public class ParticipationInTourWEBController {
         model.addAttribute("participationInTours", list);
         return "participationInTourList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list-by-tour", method = RequestMethod.GET)
     String sortByTour(Model model){
         List<ParticipationInTour> list = service.sortByTourName();
@@ -81,7 +81,7 @@ public class ParticipationInTourWEBController {
         model.addAttribute("searchForm", searchForm);
         return "participationInTourList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list-by-tour", method = RequestMethod.POST)
     public String searchSortedByTour(Model model,
                                             @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -91,7 +91,7 @@ public class ParticipationInTourWEBController {
         model.addAttribute("participationInTours", list);
         return "participationInTourList";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping("/delete/{id}")
     String delete(Model model,
                   @PathVariable("id") String id) {
@@ -99,9 +99,9 @@ public class ParticipationInTourWEBController {
         model.addAttribute("participationInTours", service.getAll());
         SearchForm searchForm = new SearchForm();
         model.addAttribute("searchForm", searchForm);
-        return "redirect:/web/participationInTour/list";
+        return "redirect:/web/participation-in-tour/list";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/create", method = RequestMethod.GET)
     public String create(Model model){
         ParticipationInTourForm participationInTourForm = new ParticipationInTourForm();
@@ -117,7 +117,7 @@ public class ParticipationInTourWEBController {
         model.addAttribute("participationInTourForm", participationInTourForm);
         return "participationInTourAdd";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public String create(Model model,
                          @ModelAttribute("participationInTourForm") ParticipationInTourForm participationInTourForm){
@@ -134,10 +134,10 @@ public class ParticipationInTourWEBController {
         SearchForm searchForm = new SearchForm();
         model.addAttribute("searchForm", searchForm);
         model.addAttribute("participationInTours", service.getAll());
-        return "redirect:/web/participationInTour/list";
+        return "redirect:/web/participation-in-tour/list";
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.GET)
     public String edit(Model model, @PathVariable("id") String id){
 
@@ -154,9 +154,9 @@ public class ParticipationInTourWEBController {
         model.addAttribute("participationInTourForm", participationInTourForm);
         model.addAttribute("mavs", mavs);
         model.addAttribute("mavs2", mavs2);
-        return "participationInTourAdd";
+        return "participationInTourEdit";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.POST)
     public String edit(Model model,
                        @ModelAttribute("touristInParticipationInTourForm") ParticipationInTourForm participationInTourForm,
@@ -174,7 +174,7 @@ public class ParticipationInTourWEBController {
         SearchForm searchForm = new SearchForm();
         model.addAttribute("searchForm", searchForm);
         model.addAttribute("participationInTourForm", participationInTourForm);
-        return "redirect:/web/participationInTour/list";
+        return "redirect:/web/participation-in-tour/list";
     }
 
 

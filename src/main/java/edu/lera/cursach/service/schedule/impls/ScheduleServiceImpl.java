@@ -28,8 +28,8 @@ public class ScheduleServiceImpl implements IScheduleService {
 
     @PostConstruct
     void init(){
-        List<Schedule> list = dao.getAll();
-//        List<Tourist> list = repository.findAll();
+//        List<Schedule> list = dao.getAll();
+        List<Schedule> list = repository.findAll();
         repository.saveAll(list);
     }
 

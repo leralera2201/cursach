@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("/web/touristInTouristInGroup")
+@RequestMapping("/web/tourist-in-group")
 public class TouristInGroupWEBController {
     @Autowired
     TouristInGroupServiceImpl service;
@@ -35,13 +35,13 @@ public class TouristInGroupWEBController {
     @Autowired
     GroupServiceImpl groupService;
 
-    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @RequestMapping("/list")
     String getAll(Model model) {
         model.addAttribute("touristInGroups", service.getAll());
         return "touristInGroupList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public String showAll(Model model) {
         List<TouristInGroup> list = service.getAll();
@@ -50,7 +50,7 @@ public class TouristInGroupWEBController {
         model.addAttribute("touristInGroups", list);
         return "touristInGroupList";
     }
-    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping(value = "/list")
     public String search(Model model,
                          @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -61,7 +61,7 @@ public class TouristInGroupWEBController {
         return "touristInGroupList";
     }
 
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list-by-tourist", method = RequestMethod.GET)
     String sortByTourist(Model model){
         List<TouristInGroup> list = service.sortByTouristName();
@@ -71,7 +71,7 @@ public class TouristInGroupWEBController {
         return "touristInGroupList";
     }
 
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list-by-tourist", method = RequestMethod.POST)
     public String searchSortedByTourist(Model model,
                                         @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -83,7 +83,7 @@ public class TouristInGroupWEBController {
     }
 
 
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list-by-group", method = RequestMethod.GET)
     String sortByCompetition(Model model){
         List<TouristInGroup> list = service.sortByGroupName();
@@ -92,7 +92,7 @@ public class TouristInGroupWEBController {
         model.addAttribute("searchForm", searchForm);
         return "touristInGroupList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list-by-group", method = RequestMethod.POST)
     public String searchSortedByCompetition(Model model,
                                             @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -102,7 +102,7 @@ public class TouristInGroupWEBController {
         model.addAttribute("touristInGroups", list);
         return "touristInGroupList";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping("/delete/{id}")
     String delete(Model model,
                   @PathVariable("id") String id) {
@@ -110,9 +110,9 @@ public class TouristInGroupWEBController {
         model.addAttribute("touristInGroups", service.getAll());
         SearchForm searchForm = new SearchForm();
         model.addAttribute("searchForm", searchForm);
-        return "redirect:/web/touristInGroup/list";
+        return "redirect:/web/tourist-in-group/list";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/create", method = RequestMethod.GET)
     public String create(Model model){
         TouristInGroupForm touristInGroupForm = new TouristInGroupForm();
@@ -128,7 +128,7 @@ public class TouristInGroupWEBController {
         model.addAttribute("touristInGroupForm", touristInGroupForm);
         return "touristInGroupAdd";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public String create(Model model,
                          @ModelAttribute("touristInGroupForm") TouristInGroupForm touristInGroupForm){
@@ -145,10 +145,10 @@ public class TouristInGroupWEBController {
         SearchForm searchForm = new SearchForm();
         model.addAttribute("searchForm", searchForm);
         model.addAttribute("touristInGroups", service.getAll());
-        return "redirect:/web/touristInGroup/list";
+        return "redirect:/web/tourist-in-group/list";
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.GET)
     public String edit(Model model, @PathVariable("id") String id){
 
@@ -165,9 +165,9 @@ public class TouristInGroupWEBController {
         model.addAttribute("touristInGroupForm", touristInGroupForm);
         model.addAttribute("mavs", mavs);
         model.addAttribute("mavs2", mavs2);
-        return "touristInGroupAdd";
+        return "touristInGroupEdit";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.POST)
     public String edit(Model model,
                        @ModelAttribute("touristInTouristInGroupForm") TouristInGroupForm touristInGroupForm,
@@ -185,7 +185,7 @@ public class TouristInGroupWEBController {
         SearchForm searchForm = new SearchForm();
         model.addAttribute("searchForm", searchForm);
         model.addAttribute("touristInGroupForm", touristInGroupForm);
-        return "redirect:/web/touristInGroup/list";
+        return "redirect:/web/tourist-in-group/list";
     }
 
 

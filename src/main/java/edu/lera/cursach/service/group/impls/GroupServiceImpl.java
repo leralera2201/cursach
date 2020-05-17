@@ -24,8 +24,8 @@ public class GroupServiceImpl implements IGroupService {
 
     @PostConstruct
     void init(){
-        List<Group> list = dao.getAll();
-//        List<Tourist> list = repository.findAll();
+//        List<Group> list = dao.getAll();
+        List<Group> list = repository.findAll();
         repository.saveAll(list);
     }
 

@@ -6,6 +6,7 @@ import edu.lera.cursach.form.ScheduleForm;
 import edu.lera.cursach.model.*;
 import edu.lera.cursach.service.group.impls.GroupServiceImpl;
 import edu.lera.cursach.service.schedule.impls.ScheduleServiceImpl;
+import edu.lera.cursach.validation.Validation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -29,13 +30,13 @@ public class ScheduleWEBController {
 
     
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-d H-m");
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping("/list")
     String getAll(Model model) {
         model.addAttribute("schedules", service.getAll());
         return "scheduleList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public String showAll(Model model) {
         List<Schedule> list = service.getAll();
@@ -44,7 +45,7 @@ public class ScheduleWEBController {
         model.addAttribute("schedules", list);
         return "scheduleList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping(value = "/list")
     public String search(Model model,
                          @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -54,7 +55,7 @@ public class ScheduleWEBController {
         model.addAttribute("schedules", list);
         return "scheduleList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list", method = RequestMethod.GET)
     String sort(Model model){
         List<Schedule> list = service.sortByDate();
@@ -63,7 +64,7 @@ public class ScheduleWEBController {
         model.addAttribute("searchForm", searchForm);
         return "scheduleList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list", method = RequestMethod.POST)
     public String searchSorted(Model model,
                                @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -73,7 +74,7 @@ public class ScheduleWEBController {
         model.addAttribute("schedules", list);
         return "scheduleList";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping("/delete/{id}")
     String delete(Model model,
                   @PathVariable("id") String id) {
@@ -83,7 +84,7 @@ public class ScheduleWEBController {
         model.addAttribute("searchForm", searchForm);
         return "redirect:/web/schedule/list";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/create", method = RequestMethod.GET)
     public String create(Model model){
         ScheduleForm scheduleForm = new ScheduleForm();
@@ -97,7 +98,7 @@ public class ScheduleWEBController {
         model.addAttribute("scheduleForm", scheduleForm);
         return "scheduleAdd";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public String create(Model model,
                          @ModelAttribute("scheduleForm") ScheduleForm scheduleForm){
@@ -106,22 +107,34 @@ public class ScheduleWEBController {
 
 
         Schedule schedule = new Schedule();
-        schedule.setTrain_name(scheduleForm.getTrain_name());
-        schedule.setDescription(scheduleForm.getDescription());
-        schedule.setPayment(Double.parseDouble(scheduleForm.getPayment()));
-        schedule.setTime(Double.parseDouble(scheduleForm.getTime()));
-        schedule.setStarted_datetime(LocalDateTime.parse(scheduleForm.getStarted_datetime(), formatter));
-        schedule.setPlace(scheduleForm.getPlace());
-        schedule.setGroup(group);
+        Validation validation = new Validation();
+        boolean vn = validation.validateName(scheduleForm.getTrain_name());
+        boolean vd = validation.validateStringField(scheduleForm.getDescription());
+        boolean vp = validation.validateStringField(scheduleForm.getPlace());
+        boolean vpm = validation.validateDouble(scheduleForm.getPayment());
+        boolean vt = validation.validateDouble(scheduleForm.getTime());
+        boolean vdt = validation.validateDateTime(scheduleForm.getStarted_datetime());
+        if (vn && vd && vdt && vp && vpm && vt) {
+            schedule.setTrain_name(scheduleForm.getTrain_name());
+            schedule.setDescription(scheduleForm.getDescription());
+            schedule.setPayment(Double.parseDouble(scheduleForm.getPayment()));
+            schedule.setTime(Double.parseDouble(scheduleForm.getTime()));
+            schedule.setStarted_datetime(LocalDateTime.parse(scheduleForm.getStarted_datetime(), formatter));
+            schedule.setPlace(scheduleForm.getPlace());
+            schedule.setGroup(group);
 
-        service.save(schedule);
-        SearchForm searchForm = new SearchForm();
-        model.addAttribute("searchForm", searchForm);
-        model.addAttribute("schedules", service.getAll());
-        return "redirect:/web/schedule/list";
+            service.save(schedule);
+            SearchForm searchForm = new SearchForm();
+            model.addAttribute("searchForm", searchForm);
+            model.addAttribute("schedules", service.getAll());
+            return "redirect:/web/schedule/list";
+        }else {
+            return "wrongData";
+        }
+
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.GET)
     public String edit(Model model, @PathVariable("id") String id){
 
@@ -142,9 +155,9 @@ public class ScheduleWEBController {
         model.addAttribute("scheduleForm", scheduleForm);
         model.addAttribute("mavs", mavs);
 
-        return "scheduleAdd";
+        return "scheduleEdit";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.POST)
     public String edit(Model model,
                        @ModelAttribute("scheduleForm") ScheduleForm scheduleForm,
@@ -153,20 +166,33 @@ public class ScheduleWEBController {
         Schedule schedule = new Schedule();
         Group group = groupService.get(scheduleForm.getGroup());
 
-        schedule.setId(scheduleForm.getId());
-        schedule.setTrain_name(scheduleForm.getTrain_name());
-        schedule.setDescription(scheduleForm.getDescription());
-        schedule.setPayment(Double.parseDouble(scheduleForm.getPayment()));
-        schedule.setTime(Double.parseDouble(scheduleForm.getTime()));
-        schedule.setStarted_datetime(LocalDateTime.parse(scheduleForm.getStarted_datetime(), formatter));
-        schedule.setPlace(scheduleForm.getPlace());
-        schedule.setGroup(group);
+        Validation validation = new Validation();
+        boolean vn = validation.validateName(scheduleForm.getTrain_name());
+        boolean vd = validation.validateStringField(scheduleForm.getDescription());
+        boolean vp = validation.validateStringField(scheduleForm.getPlace());
+        boolean vpm = validation.validateDouble(scheduleForm.getPayment());
+        boolean vt = validation.validateDouble(scheduleForm.getTime());
+        boolean vdt = validation.validateDateTime(scheduleForm.getStarted_datetime());
+        if (vn && vd && vdt && vp && vpm && vt) {
+            schedule.setId(scheduleForm.getId());
+            schedule.setTrain_name(scheduleForm.getTrain_name());
+            schedule.setDescription(scheduleForm.getDescription());
+            schedule.setPayment(Double.parseDouble(scheduleForm.getPayment()));
+            schedule.setTime(Double.parseDouble(scheduleForm.getTime()));
+            schedule.setStarted_datetime(LocalDateTime.parse(scheduleForm.getStarted_datetime(), formatter));
+            schedule.setPlace(scheduleForm.getPlace());
+            schedule.setGroup(group);
 
-        service.save(schedule);
-        SearchForm searchForm = new SearchForm();
-        model.addAttribute("searchForm", searchForm);
-        model.addAttribute("scheduleForm", scheduleForm);
-        return "redirect:/web/schedule/list";
+            service.save(schedule);
+            SearchForm searchForm = new SearchForm();
+            model.addAttribute("searchForm", searchForm);
+            model.addAttribute("scheduleForm", scheduleForm);
+            return "redirect:/web/schedule/list";
+        }else {
+            return "wrongData";
+        }
+
+
     }
 
 

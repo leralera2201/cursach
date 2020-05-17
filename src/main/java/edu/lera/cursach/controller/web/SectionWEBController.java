@@ -7,6 +7,7 @@ import edu.lera.cursach.model.Section;
 import edu.lera.cursach.model.Tourist;
 import edu.lera.cursach.service.captain.impls.CaptainServiceImpl;
 import edu.lera.cursach.service.section.impls.SectionServiceImpl;
+import edu.lera.cursach.validation.Validation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -25,13 +26,13 @@ public class SectionWEBController {
     @Autowired
     CaptainServiceImpl captainService;
 
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping("/list")
     String getAll(Model model) {
         model.addAttribute("sections", service.getAll());
         return "sectionList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public String showAll(Model model) {
         List<Section> list = service.getAll();
@@ -40,7 +41,7 @@ public class SectionWEBController {
         model.addAttribute("sections", list);
         return "sectionList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping(value = "/list")
     public String search(Model model,
                          @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -50,7 +51,7 @@ public class SectionWEBController {
         model.addAttribute("sections", list);
         return "sectionList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list", method = RequestMethod.GET)
     String sort(Model model){
         List<Section> list = service.sortByName();
@@ -59,7 +60,7 @@ public class SectionWEBController {
         model.addAttribute("searchForm", searchForm);
         return "sectionList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list", method = RequestMethod.POST)
     public String searchSorted(Model model,
                                @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -69,15 +70,18 @@ public class SectionWEBController {
         model.addAttribute("sections", list);
         return "sectionList";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping("/delete/{id}")
     String delete(Model model,
                   @PathVariable("id") String id) {
         service.delete(id);
         model.addAttribute("sections", service.getAll());
-        return "sectionList";
+        SearchForm searchForm = new SearchForm();
+        model.addAttribute("searchForm", searchForm);
+        return "redirect:/web/section/list";
+
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/create", method = RequestMethod.GET)
     String create(Model model) {
         SectionForm sectionForm = new SectionForm();
@@ -88,21 +92,30 @@ public class SectionWEBController {
         model.addAttribute("sectionForm", sectionForm);
         return "sectionAdd";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     String create(Model model, @ModelAttribute("sectionForm") SectionForm sectionForm) {
         Section section = new Section();
         Captain captain = captainService.get(sectionForm.getCaptain());
-        section.setSection_name(sectionForm.getSection_name());
-        section.setDescription(sectionForm.getDescription());
-        section.setCaptain(captain);
-        service.save(section);
-        SearchForm searchForm = new SearchForm();
-        model.addAttribute("searchForm", searchForm);
-        model.addAttribute("sections", service.getAll());
-        return "redirect:/web/section/list";
+        Validation validation = new Validation();
+        boolean vn = validation.validateName(sectionForm.getSection_name());
+        boolean vd = validation.validateStringField(sectionForm.getDescription());
+
+        if (vn && vd) {
+            section.setSection_name(sectionForm.getSection_name());
+            section.setDescription(sectionForm.getDescription());
+            section.setCaptain(captain);
+            service.save(section);
+            SearchForm searchForm = new SearchForm();
+            model.addAttribute("searchForm", searchForm);
+            model.addAttribute("sections", service.getAll());
+            return "redirect:/web/section/list";
+        }else {
+            return "wrongData";
+        }
+
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.GET)
     String edit(Model model, @PathVariable("id") String id) {
         Section section = service.get(id);
@@ -115,22 +128,31 @@ public class SectionWEBController {
         sectionForm.setCaptain(section.getCaptain().getName());
         model.addAttribute("sectionForm", sectionForm);
         model.addAttribute("mavs", mavs);
-        return "sectionAdd";
+        return "sectionEdit";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.POST)
     String edit(Model model, @PathVariable("id") String id, @ModelAttribute("sectionForm") SectionForm sectionForm) {
         Section section = new Section();
-        section.setId(id);
-        Captain captain = captainService.get(sectionForm.getCaptain());
-        section.setSection_name(sectionForm.getSection_name());
-        section.setDescription(sectionForm.getDescription());
-        section.setCaptain(captain);
-        service.save(section);
-        SearchForm searchForm = new SearchForm();
-        model.addAttribute("searchForm", searchForm);
-        model.addAttribute("sections", service.getAll());
-        return "redirect:/web/section/list";
+        Validation validation = new Validation();
+        boolean vn = validation.validateName(sectionForm.getSection_name());
+        boolean vd = validation.validateStringField(sectionForm.getDescription());
+
+        if (vn && vd) {
+            section.setId(id);
+            Captain captain = captainService.get(sectionForm.getCaptain());
+            section.setSection_name(sectionForm.getSection_name());
+            section.setDescription(sectionForm.getDescription());
+            section.setCaptain(captain);
+            service.save(section);
+            SearchForm searchForm = new SearchForm();
+            model.addAttribute("searchForm", searchForm);
+            model.addAttribute("sections", service.getAll());
+            return "redirect:/web/section/list";
+        }else {
+            return "wrongData";
+        }
+
     }
 
 }

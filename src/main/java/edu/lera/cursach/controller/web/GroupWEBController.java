@@ -9,6 +9,7 @@ import edu.lera.cursach.service.category.impls.CategoryServiceImpl;
 import edu.lera.cursach.service.coach.impls.CoachServiceImpl;
 import edu.lera.cursach.service.group.impls.GroupServiceImpl;
 import edu.lera.cursach.service.section.impls.SectionServiceImpl;
+import edu.lera.cursach.validation.Validation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -35,13 +36,13 @@ public class GroupWEBController {
     @Autowired
     CaptainServiceImpl captainService;
 
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping("/list")
     String getAll(Model model) {
         model.addAttribute("groups", service.getAll());
         return "groupList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public String showAll(Model model) {
         List<Group> list = service.getAll();
@@ -50,7 +51,7 @@ public class GroupWEBController {
         model.addAttribute("groups", list);
         return "groupList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping(value = "/list")
     public String search(Model model,
                          @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -60,7 +61,7 @@ public class GroupWEBController {
         model.addAttribute("groups", list);
         return "groupList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list", method = RequestMethod.GET)
     String sort(Model model){
         List<Group> list = service.sortByName();
@@ -69,7 +70,7 @@ public class GroupWEBController {
         model.addAttribute("searchForm", searchForm);
         return "groupList";
     }
-    @PreAuthorize("hasAnyAuthority('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @RequestMapping(value = "/sorted-list", method = RequestMethod.POST)
     public String searchSorted(Model model,
                                @ModelAttribute("searchForm") SearchForm searchForm) {
@@ -79,7 +80,7 @@ public class GroupWEBController {
         model.addAttribute("groups", list);
         return "groupList";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping("/delete/{id}")
     String delete(Model model,
                   @PathVariable("id") String id) {
@@ -89,7 +90,7 @@ public class GroupWEBController {
         model.addAttribute("searchForm", searchForm);
         return "redirect:/web/group/list";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/create", method = RequestMethod.GET)
     public String create(Model model){
         GroupForm groupForm = new GroupForm();
@@ -107,7 +108,7 @@ public class GroupWEBController {
         model.addAttribute("groupForm", groupForm);
         return "groupAdd";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     public String create(Model model,
                          @ModelAttribute("groupForm") GroupForm groupForm){
@@ -117,19 +118,27 @@ public class GroupWEBController {
         Coach coach = coachService.get(groupForm.getCoach());
 
         Group group = new Group();
-        group.setGroup_name(groupForm.getGroup_name());
-        group.setDescription(groupForm.getDescription());
-        group.setAssigned_by(captain);
-        group.setCoach(coach);
-        group.setSection(section);
-        service.save(group);
-        SearchForm searchForm = new SearchForm();
-        model.addAttribute("searchForm", searchForm);
-        model.addAttribute("groups", service.getAll());
-        return "redirect:/web/group/list";
+        Validation validation = new Validation();
+        boolean vn = validation.validateName(groupForm.getGroup_name());
+        boolean vd = validation.validateStringField(groupForm.getDescription());
+        if (vn && vd) {
+            group.setGroup_name(groupForm.getGroup_name());
+            group.setDescription(groupForm.getDescription());
+            group.setAssigned_by(captain);
+            group.setCoach(coach);
+            group.setSection(section);
+            service.save(group);
+            SearchForm searchForm = new SearchForm();
+            model.addAttribute("searchForm", searchForm);
+            model.addAttribute("groups", service.getAll());
+            return "redirect:/web/group/list";
+        }else {
+            return "wrongData";
+        }
+
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.GET)
     public String edit(Model model, @PathVariable("id") String id){
 
@@ -154,9 +163,9 @@ public class GroupWEBController {
         model.addAttribute("mavs", mavs);
         model.addAttribute("mavs2", mavs2);
         model.addAttribute("mavs3", mavs3);
-        return "groupAdd";
+        return "groupEdit";
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.POST)
     public String edit(Model model,
                        @ModelAttribute("groupForm") GroupForm groupForm,
@@ -166,19 +175,26 @@ public class GroupWEBController {
         Section section = sectionService.get(groupForm.getSection());
         Captain captain = captainService.get(groupForm.getAssigned_by());
         Coach coach = coachService.get(groupForm.getCoach());
+        Validation validation = new Validation();
+        boolean vn = validation.validateName(groupForm.getGroup_name());
+        boolean vd = validation.validateStringField(groupForm.getDescription());
+        if (vn && vd) {
+            group.setId(groupForm.getId());
+            group.setGroup_name(groupForm.getGroup_name());
+            group.setDescription(groupForm.getDescription());
+            group.setSection(section);
+            group.setCoach(coach);
+            group.setAssigned_by(captain);
 
-        group.setId(groupForm.getId());
-        group.setGroup_name(groupForm.getGroup_name());
-        group.setDescription(groupForm.getDescription());
-        group.setSection(section);
-        group.setCoach(coach);
-        group.setAssigned_by(captain);
+            service.save(group);
+            SearchForm searchForm = new SearchForm();
+            model.addAttribute("searchForm", searchForm);
+            model.addAttribute("groupForm", groupForm);
+            return "redirect:/web/group/list";
+        }else {
+            return "wrongData";
+        }
 
-        service.save(group);
-        SearchForm searchForm = new SearchForm();
-        model.addAttribute("searchForm", searchForm);
-        model.addAttribute("groupForm", groupForm);
-        return "redirect:/web/group/list";
     }
 
 

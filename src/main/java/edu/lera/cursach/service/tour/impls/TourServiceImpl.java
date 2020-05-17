@@ -28,8 +28,8 @@ public class TourServiceImpl implements ITourService {
 
     @PostConstruct
     void init(){
-        List<Tour> list = dao.getAll();
-//        List<Tourist> list = repository.findAll();
+//        List<Tour> list = dao.getAll();
+        List<Tour> list = repository.findAll();
         repository.saveAll(list);
     }
 
